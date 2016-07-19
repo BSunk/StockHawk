@@ -46,7 +46,7 @@ import java.util.GregorianCalendar;
  * Created by Bharat on 6/1/2016.
  */
 
-public class ChartViewActivity extends AppCompatActivity{
+public class ChartViewActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +148,7 @@ public class ChartViewActivity extends AppCompatActivity{
             return super.onOptionsItemSelected(item);
         }
 
-        public Float[] getStockPrices(){
+        public Float[] getStockPrices() {
             Uri StockURI = QuoteProvider.Quotes.withSymbol(stockSymbol);
             Cursor cursor = getContext().getContentResolver().query(StockURI,
                     STOCK_COLUMNS,
@@ -158,7 +158,7 @@ public class ChartViewActivity extends AppCompatActivity{
 
             cursor.moveToFirst();
             ArrayList<Float> stockPrices = new ArrayList<Float>();
-            while(!cursor.isAfterLast()) {
+            while (!cursor.isAfterLast()) {
                 stockPrices.add(Float.parseFloat(cursor.getString(INDEX_STOCK_PRICE)));
                 cursor.moveToNext();
             }
@@ -166,17 +166,18 @@ public class ChartViewActivity extends AppCompatActivity{
             return stockPrices.toArray(new Float[stockPrices.size()]);
         }
 
-        public String[] getStockID(){
+        public String[] getStockID() {
             Uri StockURI = QuoteProvider.Quotes.withSymbol(stockSymbol);
             Cursor cursor = getContext().getContentResolver().query(StockURI,
-                    STOCK_COLUMNS,
+                    null,
                     null,
                     null,
                     null);
 
             cursor.moveToFirst();
+            DatabaseUtils.dumpCursor(cursor);
             ArrayList<String> stockID = new ArrayList<String>();
-            while(!cursor.isAfterLast()) {
+            while (!cursor.isAfterLast()) {
                 stockID.add(cursor.getString(INDEX_STOCK_ID));
                 cursor.moveToNext();
             }
@@ -184,134 +185,6 @@ public class ChartViewActivity extends AppCompatActivity{
             return stockID.toArray(new String[stockID.size()]);
         }
 
-
-
-        public class FetchStockPrices extends AsyncTask<String, Void, String[][]> {
-
-            private OkHttpClient client = new OkHttpClient();
-            private Context mContext;
-
-            String fetchData(String url) throws IOException {
-                Request request = new Request.Builder()
-                        .url(url)
-                        .build();
-
-                Response response = client.newCall(request).execute();
-                return response.body().string();
-            }
-
-            @Override
-            protected String[][] doInBackground(String... params) {
-
-                StringBuilder mStoredSymbols = new StringBuilder();
-
-                StringBuilder urlStringBuilder = new StringBuilder();
-                String stockName = params[0];
-
-                Calendar cal = new GregorianCalendar();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                dateFormat.setTimeZone(cal.getTimeZone());
-                String endDate = dateFormat.format(cal.getTime());
-                cal.add(Calendar.DAY_OF_MONTH, -10);
-                String startDate = dateFormat.format(cal.getTime());
-
-
-                // Base URL for the Yahoo query
-                urlStringBuilder.append("http://query.yahooapis.com/v1/public/yql?q=%20select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20=%20");
-                mStoredSymbols.append("\""+
-                        stockName+"\"");
-                urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString()));
-                urlStringBuilder.append("%20and%20startDate%20=%20%22");
-                urlStringBuilder.append(startDate);
-                urlStringBuilder.append("%22%20and%20endDate%20=%20%22");
-                urlStringBuilder.append(endDate);
-                urlStringBuilder.append("%22&format=json%20&diagnostics=true%20&env=store://datatables.org/alltableswithkeys%20&callback=");
-
-                String urlString = urlStringBuilder.toString();
-                String getResponse;
-                JSONObject jsonObject = null;
-                JSONArray resultsArray = null;
-
-                try {
-                    getResponse = fetchData(urlString);
-                    String[][] results = Utils.stockJSONToArray(getResponse);
-                    return results;
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String[][] results){
-
-                float[] closingPrices = new float[5];
-                String[] dates = new String[5];
-
-                //Find the min and max closing values for the stock. We use this to shrink the Y values.
-                int max = Math.round(Float.parseFloat(results[1][0]));
-                int min = Math.round(Float.parseFloat(results[1][0]));
-
-
-                //Loop to grab the latest 5 days closing prices and dates in order to use in the chartview.
-                for (int i = 0; i < 5 ; i++){
-
-                    closingPrices[i] = Float.parseFloat(results[1][i]);
-                    dates[i] = results[0][i];
-                    if (Math.round(Float.parseFloat(results[1][i])) > max) {
-                        max = Math.round(Float.parseFloat(results[1][i]));
-                    }
-                    if (Math.round(Float.parseFloat(results[1][i])) < min) {
-                        min = Math.round(Float.parseFloat(results[1][i]));
-                    }
-                }
-
-                //Loop to reverse the values of the date and closingPrice arrays.
-                for(int i=0;i<dates.length/2;i++)
-                {
-                    String temp=dates[i];
-                    dates[i]=dates[(dates.length-1)-i];
-                    dates[(dates.length-1)-i]=temp;
-
-                    float tempvar=closingPrices[i];
-                    closingPrices[i]=closingPrices[(closingPrices.length-1)-i];
-                    closingPrices[(closingPrices.length-1)-i]=tempvar;
-
-                }
-                int steps;
-                if (max-min <= 0) {
-                    steps = 1;
-                }
-                else {
-                    steps = max-min;
-                }
-
-                LineSet dataset = new LineSet(dates, closingPrices);
-                dataset.setColor(Color.parseColor("#f2f2f2"))
-                        .setDotsColor(Color.parseColor("#f2f2f2"))
-                        .setThickness(4);
-                mChart.addData(dataset);
-
-                dataset = new LineSet(dates, closingPrices);
-                dataset.setColor(Color.parseColor("#f2f2f2"))
-                        .setDotsColor(Color.parseColor("#f2f2f2"))
-                        .setThickness(4);
-                mChart.addData(dataset);
-
-                // Chart
-                mChart.setBorderSpacing(Tools.fromDpToPx(15))
-                        .setYLabels(AxisController.LabelPosition.OUTSIDE)
-                        .setLabelsColor(Color.parseColor("#6a84c3"))
-                        .setAxisBorderValues(min-5, max+5)
-                        .setStep(steps)
-                        .setXAxis(true)
-                        .setYAxis(true);
-
-                mChart.show();
-            }
-        }
     }
 }
 
