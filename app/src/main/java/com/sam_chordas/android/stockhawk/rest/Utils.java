@@ -1,9 +1,15 @@
 package com.sam_chordas.android.stockhawk.rest;
 
+import android.app.AlertDialog;
 import android.content.ContentProviderOperation;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
+
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
+
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,8 +24,9 @@ public class Utils {
 
     public static boolean showPercent = true;
 
-    public static ArrayList quoteJsonToContentVals(String JSON){
+    public static ArrayList quoteJsonToContentVals(String JSON ){
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
+        Log.v("TEST", JSON);
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
         try{
@@ -31,7 +38,8 @@ public class Utils {
                 if (count == 1){
                     jsonObject = jsonObject.getJSONObject("results")
                             .getJSONObject("quote");
-                    if (jsonObject.getString("Name").equals("null")) {
+                    if (jsonObject.getString("Bid").equals("null")) {
+                        return null;
                     }
                     else {
                         batchOperations.add(buildBatchOperation(jsonObject, created));
@@ -42,7 +50,8 @@ public class Utils {
                     if (resultsArray != null && resultsArray.length() != 0){
                         for (int i = 0; i < resultsArray.length(); i++){
                             jsonObject = resultsArray.getJSONObject(i);
-                            if (jsonObject.getString("Name").equals("null")) {
+                            if (jsonObject.getString("Bid").equals("null")) {
+                                return null;
                             }
                             else {
                                 batchOperations.add(buildBatchOperation(jsonObject, created));
@@ -102,5 +111,6 @@ public class Utils {
         }
         return builder.build();
     }
+
 }
 

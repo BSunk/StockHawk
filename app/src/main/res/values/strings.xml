@@ -21,4 +21,7 @@
     <string name="chartview_change">Change: %1$s</string>
     <string name="chartview_percent_change">Percent Change: %1$s</string>
 
+    <string name="alert_no_stock">Error adding stock</string>
+    <string name="alert_stock_added">Stock added!</string>
+
 </resources>
