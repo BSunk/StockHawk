@@ -18,6 +18,7 @@ import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 /**
  * RemoteViewsService controlling the data being shown in the scrollable weather detail widget
  */
+//Implements the remoteViewService for the widget views.
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class WidgetService extends RemoteViewsService {
     public final String LOG_TAG = WidgetService.class.getSimpleName();
@@ -105,8 +106,7 @@ public class WidgetService extends RemoteViewsService {
                 extras.putString(StockProvider.EXTRA_ITEM, stockSymbol);
                 Intent fillInIntent = new Intent();
                 fillInIntent.putExtras(extras);
-                // Make it possible to distinguish the individual on-click
-                // action of a given item
+                // An onclick to go to the current stock chart when clicking on the row of the stock.
                 views.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
 
                 return views;

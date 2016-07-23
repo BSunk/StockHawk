@@ -9,19 +9,25 @@
     <string name="action_change_units">Change Units</string>
     <string name="symbol_search">Symbol Search</string>
     <string name="content_test">Search for a Stock Symbol</string>
+
     <string name="input_hint" translatable="false">FB</string>
     <string name="input_prefill"></string>
-    <string name="network_toast">Cannot update. This app requires an internet connection.</string>
-    <string name="addStock">Add stock</string>
+
+    <string name="addStock">Add a stock</string>
     <string name="title_widget_stocks">StockHawk</string>
     <string name="empty_string">List is Empty. Please add a stock!</string>
     <string name="empty_list_no_internet">No internet connection</string>
+
+    //Chart View strings.
     <string name="chartview_stock_symbol">Stock Symbol: %1$s</string>
     <string name="chartview_bid_price">Last Bid Price: %1$s</string>
     <string name="chartview_change">Change: %1$s</string>
     <string name="chartview_percent_change">Percent Change: %1$s</string>
 
+    //Strings for the toast messages.
+    <string name="network_toast">Cannot update data. This app requires an internet connection.</string>
     <string name="alert_no_stock">Error adding stock</string>
     <string name="alert_stock_added">Stock added!</string>
+    <string name="alert_stock_in_DB">This stock is already saved!</string>
 
 </resources>

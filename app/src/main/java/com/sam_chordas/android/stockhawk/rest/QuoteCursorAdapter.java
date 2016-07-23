@@ -82,7 +82,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     mContext.getContentResolver().delete(QuoteProvider.Quotes.withSymbol(symbol), null, null);
     notifyItemRemoved(position);
 
-    Intent dataUpdatedIntent = new Intent(StockTaskService.ACTION_DATA_UPDATED)
+    Intent dataUpdatedIntent = new Intent(StockTaskService.ACTION_DATA_UPDATED) //Updates widget that an item has been removed.
             .setPackage(mContext.getPackageName());
     mContext.sendBroadcast(dataUpdatedIntent);
   }

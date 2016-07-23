@@ -7,6 +7,7 @@ import android.widget.Toast;
 /**
  * Created by Bharat on 7/22/2016.
  */
+//class to display a toast message from the service intent.
 public class DisplayToast implements Runnable {
     private final Context mContext;
     String mText;

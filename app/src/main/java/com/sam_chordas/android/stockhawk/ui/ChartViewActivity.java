@@ -30,7 +30,8 @@ import java.util.Collections;
 /**
  * Created by Bharat on 6/1/2016.
  */
-
+//Class and fragment to make a line chart from the WilliamChart library.
+// This will use the created  field in the Content Provider for the x axis and the stock price at that time for the y axis.
 public class ChartViewActivity extends AppCompatActivity {
 
     @Override
@@ -95,7 +96,7 @@ public class ChartViewActivity extends AppCompatActivity {
 
             Intent intent = getActivity().getIntent();
             if (intent != null) {
-
+                //retrieves stock symbol from intent and formats the respective textview.
                 stockSymbol = intent.getStringExtra("symbol");
                 stockNameTextView.setText(String.format(getResources().getString(R.string.chartview_stock_symbol),stockSymbol.toUpperCase()));
                 getStockData();
@@ -103,6 +104,7 @@ public class ChartViewActivity extends AppCompatActivity {
             return rootView;
         }
 
+        //function to populate the various textviews in the chartview activity as well as make the chart for stock price over time.
         public void getStockData() {
             Uri StockURI = QuoteProvider.Quotes.withSymbol(stockSymbol);
             Cursor cursor = getContext().getContentResolver().query(StockURI,
@@ -134,17 +136,18 @@ public class ChartViewActivity extends AppCompatActivity {
             float[] floatArray = new float[stockPrices.length];
             int i = 0;
             for (Float f : stockPrices) {
-                floatArray[i++] = (f != null ? f : Float.NaN); // Or whatever default you want.
+                floatArray[i++] = (f != null ? f : Float.NaN);
             }
 
             LineSet dataset = new LineSet(stockCreated, floatArray);
-            dataset.setColor(Color.parseColor("#f2f2f2"))
-                    .setDotsColor(Color.parseColor("#f2f2f2"))
-                    .setThickness(1);
+            dataset.setColor(getResources().getColor(R.color.md_divider_white))
+                    .setDotsColor(getResources().getColor(R.color.material_blue_700))
+                    .setSmooth(true)
+                    .setThickness(4);
             mChart.addData(dataset);
             mChart.setBorderSpacing(Tools.fromDpToPx(15))
                     .setXLabels(YController.LabelPosition.NONE)
-                    .setLabelsColor(Color.parseColor("#6a84c3"))
+                    .setLabelsColor(getResources().getColor(R.color.material_gray_200))
                     .setAxisBorderValues(minStockPrice-1, maxStockPrice+1);
             mChart.show();
         }

@@ -26,7 +26,6 @@ public class Utils {
 
     public static ArrayList quoteJsonToContentVals(String JSON ){
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
-        Log.v("TEST", JSON);
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
         try{
@@ -39,7 +38,7 @@ public class Utils {
                     jsonObject = jsonObject.getJSONObject("results")
                             .getJSONObject("quote");
                     if (jsonObject.getString("Bid").equals("null")) {
-                        return null;
+                        return null; //returns null if a bid price is not found for the stock.
                     }
                     else {
                         batchOperations.add(buildBatchOperation(jsonObject, created));
@@ -51,7 +50,7 @@ public class Utils {
                         for (int i = 0; i < resultsArray.length(); i++){
                             jsonObject = resultsArray.getJSONObject(i);
                             if (jsonObject.getString("Bid").equals("null")) {
-                                return null;
+                                return null; //returns null if a bid price is not found for the stock.
                             }
                             else {
                                 batchOperations.add(buildBatchOperation(jsonObject, created));
@@ -95,7 +94,7 @@ public class Utils {
         try {
             String change = jsonObject.getString("Change");
             builder.withValue(QuoteColumns.CREATED, createddatetime);
-            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
+            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol").toUpperCase());
             builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
             builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
                     jsonObject.getString("ChangeinPercent"), true));

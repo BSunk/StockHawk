@@ -77,9 +77,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             if (isConnected) {
                 startService(mServiceIntent);
             } else {
-                networkToast();
+                networkDialog();
             }
         }
+
         emptyView = (TextView) findViewById(R.id.empty_view);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -102,7 +103,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 }));
         recyclerView.setAdapter(mCursorAdapter);
 
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.attachToRecyclerView(recyclerView);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -119,10 +119,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                     // in the DB and proceed accordingly
                                     Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
                                             new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
-                                            new String[]{input.toString()}, null);
+                                            new String[]{input.toString().toUpperCase()}, null);
                                     if (c.getCount() != 0) {
                                         Toast toast =
-                                                Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
+                                                Toast.makeText(MyStocksActivity.this, getString(R.string.alert_stock_in_DB),
                                                         Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                         toast.show();
@@ -138,7 +138,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                             })
                             .show();
                 } else {
-                    networkToast();
+                    networkDialog();
                 }
 
             }
@@ -176,28 +176,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
     }
 
-    public void networkToast(){
-       // Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_LONG).show();
-
+    public void networkDialog(){
         AlertDialog alertDialog = new AlertDialog.Builder(mContext).create();
         //alertDialog.setTitle("Alert");
         alertDialog.setMessage(getString(R.string.network_toast));
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL,"OK",
-                new DialogInterface.OnClickListener()
-                {
-                    public void onClick (DialogInterface dialog,int which){
-                        dialog.dismiss();
-                    }
-                }
-        );
-        alertDialog.show();
-    }
-
-
-    public void showAlert() {
-        AlertDialog alertDialog = new AlertDialog.Builder(mContext).create();
-        alertDialog.setTitle("Alert");
-        alertDialog.setMessage("Alert message to be shown");
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL,"OK",
                 new DialogInterface.OnClickListener()
                 {
@@ -231,9 +213,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         if (id == R.id.action_change_units){
             // this is for changing stock changes from percent value to dollar value

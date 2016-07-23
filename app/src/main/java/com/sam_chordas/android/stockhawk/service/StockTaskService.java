@@ -1,26 +1,18 @@
 package com.sam_chordas.android.stockhawk.service;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.RemoteViews;
-
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
-import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.Utils;
-import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -86,7 +78,6 @@ public class StockTaskService extends GcmTaskService{
           e.printStackTrace();
         }
       } else if (initQueryCursor != null){
-        DatabaseUtils.dumpCursor(initQueryCursor);
         initQueryCursor.moveToFirst();
         for (int i = 0; i < initQueryCursor.getCount(); i++){
           mStoredSymbols.append("\""+
@@ -145,6 +136,7 @@ public class StockTaskService extends GcmTaskService{
     return result;
   }
 
+  //function to tell the widget to update it's list of data.
   public void updateWidgets() {
     Context context = mContext;
     // Setting the package ensures that only components in our app will receive the broadcast

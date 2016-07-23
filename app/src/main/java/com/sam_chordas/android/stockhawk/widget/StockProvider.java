@@ -13,7 +13,7 @@ import android.widget.RemoteViews;
 
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.ui.ChartViewActivity;
-
+//An appWidgetProvider class for the stock widget that provides the views.
 public class StockProvider extends AppWidgetProvider {
 
     public static final String ACTION = "com.sam_chordas.android.stockhawk.TOAST_ACTION";
