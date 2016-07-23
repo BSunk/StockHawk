@@ -24,12 +24,14 @@ public class WidgetService extends RemoteViewsService {
     private static final String[] STOCK_COLUMNS = {
             QuoteColumns._ID,
             QuoteColumns.SYMBOL,
-            QuoteColumns.BIDPRICE
+            QuoteColumns.BIDPRICE,
+            QuoteColumns.CHANGE
     };
     // these indices must match the projection
     static final int INDEX_STOCK_ID = 0;
     static final int INDEX_STOCK_SYMBOL = 1;
-    static final int INDEX_STOCK_PRICE = 4;
+    static final int INDEX_STOCK_PRICE = 2;
+    static final int INDEX_STOCK_CHANGE = 3;
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
@@ -54,7 +56,7 @@ public class WidgetService extends RemoteViewsService {
                 final long identityToken = Binder.clearCallingIdentity();
                 Uri StockURI = QuoteProvider.Quotes.CONTENT_URI;
                 data = getContentResolver().query(StockURI,
-                        null,
+                        STOCK_COLUMNS,
                         QuoteColumns.ISCURRENT + " = 1",
                         null,
                         null);
@@ -87,8 +89,17 @@ public class WidgetService extends RemoteViewsService {
                         R.layout.widget_list_item);
                 String stockSymbol = data.getString(INDEX_STOCK_SYMBOL);
                 String bidPrice = data.getString(INDEX_STOCK_PRICE);
+                String change = data.getString(INDEX_STOCK_CHANGE);
+
                 views.setTextViewText(R.id.widget_stockName, stockSymbol);
                 views.setTextViewText(R.id.widget_bid_price, bidPrice);
+                views.setTextViewText(R.id.widget_change, change);
+                if (change.indexOf('-')>=0) {
+                    views.setInt(R.id.widget_change, "setBackgroundResource", R.drawable.percent_change_pill_red);
+                }
+                else {
+                    views.setInt(R.id.widget_change, "setBackgroundResource", R.drawable.percent_change_pill_green);
+                }
 
                 Bundle extras = new Bundle();
                 extras.putString(StockProvider.EXTRA_ITEM, stockSymbol);
@@ -96,7 +107,7 @@ public class WidgetService extends RemoteViewsService {
                 fillInIntent.putExtras(extras);
                 // Make it possible to distinguish the individual on-click
                 // action of a given item
-                views.setOnClickFillInIntent(R.id.widget_stockName, fillInIntent);
+                views.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
 
                 return views;
             }

@@ -52,7 +52,6 @@ public class StockProvider extends AppWidgetProvider {
             // broadcasting TOAST_ACTION.
             activityIntent.setAction(StockProvider.ACTION);
             activityIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetIds[i]);
-            //intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
             PendingIntent toastPendingIntent = PendingIntent.getBroadcast(context, 0, activityIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
             rv.setPendingIntentTemplate(R.id.listViewWidget, toastPendingIntent);

@@ -38,6 +38,7 @@ public class StockTaskService extends GcmTaskService{
   private boolean isUpdate;
   public static final String ACTION_DATA_UPDATED =
           "com.sam_chordas.android.stockhawk.ACTION_DATA_UPDATED";
+
   public StockTaskService(){}
 
   public StockTaskService(Context context){
