@@ -44,14 +44,14 @@
 
             <TextView
                 style="@style/ChartViewText"
-                android:text="@string/chartview_change"
-                android:id="@+id/change" />
-
-            <TextView
-                style="@style/ChartViewText"
                 android:text="@string/chartview_bid_price"
                 android:id="@+id/bid_price"
                 />
+
+            <TextView
+                style="@style/ChartViewText"
+                android:text="@string/chartview_change"
+                android:id="@+id/change" />
 
             <TextView
                 style="@style/ChartViewText"

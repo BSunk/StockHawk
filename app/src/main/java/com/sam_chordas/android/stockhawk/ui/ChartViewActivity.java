@@ -4,6 +4,8 @@ import android.animation.PropertyValuesHolder;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -31,6 +33,7 @@ import com.db.chart.view.animation.easing.BounceEase;
 import com.db.chart.view.animation.easing.CubicEase;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+import com.sam_chordas.android.stockhawk.data.QuoteDatabase;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 
 import java.text.SimpleDateFormat;
@@ -43,8 +46,9 @@ import java.util.TimeZone;
 /**
  * Created by Bharat on 6/1/2016.
  */
-//Class and fragment to make a line chart from the WilliamChart library.
+//Class and fragment to make a line chart from the WilliamChart library. Only bid values that are different are charted for a better representation.
 // This will use the created  field in the Content Provider for the x axis and the stock price at that time for the y axis.
+//A tooltip was implemented to view exact x and y axis.
 public class ChartViewActivity extends AppCompatActivity {
 
     @Override
@@ -67,20 +71,16 @@ public class ChartViewActivity extends AppCompatActivity {
         private LineChartView mChart;
         private String stockSymbol;
         private static final String[] STOCK_COLUMNS = {
-                QuoteColumns._ID,
-                QuoteColumns.SYMBOL,
-                QuoteColumns.BIDPRICE,
+                "DISTINCT " + QuoteColumns.BIDPRICE,
                 QuoteColumns.CREATED,
                 QuoteColumns.CHANGE,
                 QuoteColumns.PERCENT_CHANGE
         };
         // these indices must match the projection
-        static final int INDEX_STOCK_ID = 0;
-        static final int INDEX_STOCK_SYMBOL = 1;
-        static final int INDEX_STOCK_PRICE = 2;
-        static final int INDEX_STOCK_CREATED = 3;
-        static final int INDEX_STOCK_CHANGE = 4;
-        static final int INDEX_STOCK_PERCENT_CHANGE = 5;
+        static final int INDEX_STOCK_PRICE = 0;
+        static final int INDEX_STOCK_CREATED = 1;
+        static final int INDEX_STOCK_CHANGE = 2;
+        static final int INDEX_STOCK_PERCENT_CHANGE = 3;
 
         int maxStockPrice;
         int minStockPrice;
@@ -130,9 +130,23 @@ public class ChartViewActivity extends AppCompatActivity {
             cursor.moveToFirst();
             ArrayList<Float> stockPrice = new ArrayList<>();
             ArrayList<String> stockCreatedArray = new ArrayList<>();
+
+            //Logic to make only unique points added to chart. This will check if the bid price from the previous point is the same. If it is, it will ignore the point.
             while (!cursor.isAfterLast()) {
-                stockPrice.add(Float.parseFloat(cursor.getString(INDEX_STOCK_PRICE)));
-                stockCreatedArray.add(cursor.getString(INDEX_STOCK_CREATED));
+
+                try {
+                    if(Float.parseFloat(cursor.getString(INDEX_STOCK_PRICE)) != (stockPrice.get(stockPrice.size()-1))) {
+                        stockPrice.add(Float.parseFloat(cursor.getString(INDEX_STOCK_PRICE)));
+                        stockCreatedArray.add(cursor.getString(INDEX_STOCK_CREATED));
+                    }
+                    else if(Float.parseFloat(cursor.getString(INDEX_STOCK_PRICE)) == (stockPrice.get(stockPrice.size()-1))) {
+
+                    }
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    stockPrice.add(Float.parseFloat(cursor.getString(INDEX_STOCK_PRICE)));
+                    stockCreatedArray.add(cursor.getString(INDEX_STOCK_CREATED));
+                }
                 cursor.moveToNext();
             }
             cursor.moveToLast();
@@ -217,7 +231,7 @@ public class ChartViewActivity extends AppCompatActivity {
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             try {
                 Date date = sdf.parse(dateRaw);
-                SimpleDateFormat formatter = new SimpleDateFormat("MM/yy " + "hh:mm", Locale.US);
+                SimpleDateFormat formatter = new SimpleDateFormat("MM/dd " + "hh:mma", Locale.US);
                 return formatter.format(date);
             }
             catch (Exception e) {
