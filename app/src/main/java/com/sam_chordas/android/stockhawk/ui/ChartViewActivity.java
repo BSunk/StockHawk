@@ -1,10 +1,13 @@
 package com.sam_chordas.android.stockhawk.ui;
 
+import android.animation.PropertyValuesHolder;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -17,15 +20,25 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.db.chart.Tools;
+import com.db.chart.listener.OnEntryClickListener;
 import com.db.chart.model.LineSet;
 import com.db.chart.view.AxisController;
 import com.db.chart.view.LineChartView;
+import com.db.chart.view.Tooltip;
 import com.db.chart.view.YController;
+import com.db.chart.view.animation.Animation;
+import com.db.chart.view.animation.easing.BounceEase;
+import com.db.chart.view.animation.easing.CubicEase;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by Bharat on 6/1/2016.
@@ -77,6 +90,8 @@ public class ChartViewActivity extends AppCompatActivity {
         TextView stockPercentChangeTextView;
         String[] stockCreated;
         Float[] stockPrices;
+        private Tooltip mTip;
+        TextView tooltipDate;
 
         public GraphFragment() {
             setHasOptionsMenu(true);
@@ -93,7 +108,6 @@ public class ChartViewActivity extends AppCompatActivity {
             stockPriceTextView = (TextView) rootView.findViewById(R.id.bid_price);
             stockChangeTextView = (TextView) rootView.findViewById(R.id.change);
             stockPercentChangeTextView = (TextView) rootView.findViewById(R.id.percent_change);
-
             Intent intent = getActivity().getIntent();
             if (intent != null) {
                 //retrieves stock symbol from intent and formats the respective textview.
@@ -133,11 +147,29 @@ public class ChartViewActivity extends AppCompatActivity {
             stockPrices =  stockPrice.toArray(new Float[stockPrice.size()]);
             stockCreated = stockCreatedArray.toArray(new String[stockCreatedArray.size()]);
 
-            float[] floatArray = new float[stockPrices.length];
+            final float[] floatArray = new float[stockPrices.length];
             int i = 0;
             for (Float f : stockPrices) {
                 floatArray[i++] = (f != null ? f : Float.NaN);
             }
+
+            mTip = new Tooltip(getContext(), R.layout.tooltip, R.id.value);
+            mTip.setVerticalAlignment(Tooltip.Alignment.BOTTOM_TOP);
+            mTip.setDimensions((int) Tools.fromDpToPx(100), (int) Tools.fromDpToPx(50));
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+
+                mTip.setEnterAnimation(PropertyValuesHolder.ofFloat(View.ALPHA, 1),
+                        PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f),
+                        PropertyValuesHolder.ofFloat(View.SCALE_X, 1f)).setDuration(200);
+
+                mTip.setExitAnimation(PropertyValuesHolder.ofFloat(View.ALPHA, 0),
+                        PropertyValuesHolder.ofFloat(View.SCALE_Y, 0f),
+                        PropertyValuesHolder.ofFloat(View.SCALE_X, 0f)).setDuration(200);
+
+                mTip.setPivotX(Tools.fromDpToPx(65) / 2);
+                mTip.setPivotY(Tools.fromDpToPx(25));
+            }
+            mChart.setTooltips(mTip);
 
             LineSet dataset = new LineSet(stockCreated, floatArray);
             dataset.setColor(getResources().getColor(R.color.md_divider_white))
@@ -149,8 +181,48 @@ public class ChartViewActivity extends AppCompatActivity {
                     .setXLabels(YController.LabelPosition.NONE)
                     .setLabelsColor(getResources().getColor(R.color.material_gray_200))
                     .setAxisBorderValues(minStockPrice-1, maxStockPrice+1);
-            mChart.show();
+
+
+            String date = convertToDateProper(stockCreated[0]);
+            tooltipDate = (TextView) mTip.findViewById(R.id.date);
+            tooltipDate.setText(date);
+
+            Runnable chartAction = new Runnable() {
+                @Override
+                public void run() {
+                    mTip.prepare(mChart.getEntriesArea(0).get(0), floatArray[0]);
+                    mChart.showTooltip(mTip, true);
+                }
+            };
+
+            //onclick to inject the date into the tooltip
+            mChart.setOnEntryClickListener(new OnEntryClickListener() {
+                @Override
+                public void onClick(int setIndex, int entryIndex, Rect rect) {
+
+                    tooltipDate.setText(convertToDateProper(stockCreated[entryIndex]));
+                }
+            });
+
+            Animation anim = new Animation()
+                    .setEasing(new CubicEase()).setEndAction(chartAction);
+
+            mChart.show(anim);
         }
 
+        //converts the date from the yahoo api into a more usable one and returns it.
+        private String convertToDateProper(String dateRaw) {
+            String pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+            SimpleDateFormat sdf = new SimpleDateFormat(pattern, Locale.US);
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            try {
+                Date date = sdf.parse(dateRaw);
+                SimpleDateFormat formatter = new SimpleDateFormat("MM/yy " + "hh:mm", Locale.US);
+                return formatter.format(date);
+            }
+            catch (Exception e) {
+            }
+            return " ";
+        }
     }
 }
