@@ -1,4 +1,4 @@
-Stock Hawk Project 3
+# Stock Hawk
 
 
 This is for project 3 of the Udacity nanodegree program. 
@@ -12,3 +12,10 @@ A details page is implemented when selecting a stock which shows a chart of the 
 RTL is supported. 
 
 Content descriptions are in place for all buttons. 
+
+## Screenshots
+
+<img src="/screenshots/device-2016-08-14-101404.png" alt="image" width="400">
+<img src="/screenshots/device-2016-08-14-101438.png" alt="image" width="400">
+<img src="/screenshots/device-2016-08-14-101523.png" alt="image" width="400">
+<img src="/screenshots/device-2016-08-14-101544.png" alt="image" width="400">
